@@ -289,13 +289,13 @@ const Q_LABELS = {
   q2:  'Q2 — Blowout frequency',
   q3:  'Q3 — Blowout pain score (1-5)',
   q4:  'Q4 — Current blowout approach',
-  q4b: 'Q5 — Weaning stain frequency',
-  q4c: 'Q6 — Current stain approach',
-  q4d: 'Q7 — Stain spray satisfaction (1-5)',
-  q5:  'Q8 — Reaction to concept',
-  q6:  'Q9 — Preferred proposition (A or B)',
-  q7:  'Q10 — Expected price',
-  q9:  'Q11 — Likelihood to recommend (1-5)',
+  q5: 'Q5 — Weaning stain frequency',
+  q6: 'Q6 — Current stain approach',
+  q7: 'Q7 — Stain spray satisfaction (1-5)',
+  q8:  'Q8 — Reaction to concept',
+  q9:  'Q9 — Preferred proposition (A or B)',
+  q10:  'Q10 — Expected price',
+  q11:  'Q11 — Likelihood to recommend (1-5)',
   q6_exit: 'Why not for them (open text)',
   path: 'Survey path'
 };
@@ -356,7 +356,7 @@ const Qs = [
 
 
   /* Q4b — weaning stain frequency */
-  { id:'q4b', n:5,
+  { id:'q5', n:5,
     text:'How often do your baby\'s clothes get food stains you struggle to remove?',
     sub:'Think carrot, tomato, berry, avocado, sweet potato — the ones that survive the washing machine.',
     type:'single',
@@ -364,7 +364,7 @@ const Qs = [
   },
 
   /* Q4c — current stain removal behaviour */
-  { id:'q4c', n:6,
+  { id:'q6', n:6,
     text:'What do you currently do with clothes that have stubborn food stains?',
     sub:'Pick whichever best describes your usual approach.',
     type:'single',
@@ -372,14 +372,14 @@ const Qs = [
   },
 
   /* Q4d — satisfaction with sprays */
-  { id:'q4d', n:7,
+  { id:'q7', n:7,
     text:'How satisfied are you with stain sprays and your current approach to food stains?',
     sub:'1 = completely useless &nbsp;&nbsp; 5 = they work fine for me',
     type:'scale'
   },
 
   /* Q5 — concept reveal + first reaction */
-  { id:'q5', n:8,
+  { id:'q8', n:8,
     text:'We\'re building a product for this exact problem. Here\'s what it does:',
     sub:'Please read, then give us your honest first reaction.',
     type:'single', concept:true,
@@ -392,22 +392,22 @@ const Qs = [
   },
 
   /* Q6 — proposition A vs B (key product decision) */
-  { id:'q6', n:9,
+  { id:'q9', n:9,
     text:'Which version would be more valuable to you?',
     sub:'Both use the same enzyme technology. The difference is what happens at the end of the cycle.',
     type:'prop'
   },
 
   /* Q7 — WTP ranges — options set dynamically from Q6 answer at render time */
-  { id:'q7', n:10,
+  { id:'q10', n:10,
     text:'What would you expect to pay for the pod unit?',
     sub:'Think of countertop baby appliances you\'ve bought before — sterilisers, warmers, bottle makers. Pick the range that feels right.',
     type:'single', wtp:true
-    /* opts injected dynamically in render() based on A.q6 */
+    /* opts injected dynamically in render() based on A.q9 */
   },
 
   /* Q9 — word-of-mouth proxy */
-  { id:'q9', n:11,
+  { id:'q11', n:11,
     text:'If this product worked exactly as described, how likely are you to tell another parent about it?',
     sub:'1 = definitely not &nbsp;&nbsp; 5 = I\'d tell everyone I know',
     type:'scale'
@@ -486,7 +486,7 @@ function render() {
   /* ── WTP NOTE + DYNAMIC OPTS INJECTION ── */
   if (q.wtp) {
     // Inject the right price options based on what proposition the respondent chose
-    const choseB = A.q6 === 'B';
+    const choseB = A.q9 === 'B';
     q.opts = choseB
       ? [
           '$130 – $149',
@@ -556,7 +556,7 @@ function pick(id, val) { A[id] = val; render(); }
 
 function isNegQ5() {
   // index 2 = "not for me"  |  index 3 = "wouldn't use"
-  return Qs[cur].id === 'q5' && (A.q5 === 2 || A.q5 === 3);
+  return Qs[cur].id === 'q8' && (A.q8 === 2 || A.q8 === 3);
 }
 
 function next() {
@@ -567,7 +567,7 @@ function next() {
 
 function back() {
   if (document.getElementById('exit-q')) {
-    cur = Qs.findIndex(q => q.id === 'q5');
+    cur = Qs.findIndex(q => q.id === 'q8');
     render();
     return;
   }
@@ -580,7 +580,7 @@ function renderExit() {
   document.getElementById('prog-pct').textContent = pct + '%';
   document.getElementById('fill').style.width = pct + '%';
 
-  const lead = A.q5 === 2
+  const lead = A.q8 === 2
     ? "You mentioned this isn't quite for you."
     : "You mentioned you wouldn't use this.";
 
@@ -608,18 +608,18 @@ function renderExit() {
 }
 
 function submitExit() {
-  A.q6_exit = document.getElementById('exit-txt').value.trim();
+  A.q9_exit = document.getElementById('exit-txt').value.trim();
   doneEarly();
 }
 
 function doneEarly() {
   // Capture and submit before rendering thank-you
-  A.q6_exit = (document.getElementById('exit-txt') || {}).value?.trim() || A.q6_exit || '';
+  A.q9_exit = (document.getElementById('exit-txt') || {}).value?.trim() || A.q9_exit || '';
   submitToSheet({
     q1: A.q1, q2: A.q2, q3: A.q3, q4: A.q4,
-    q4b: A.q4b||'', q4c: A.q4c||'', q4d: A.q4d||'',
-    q5: A.q5, q6: '', q7: '', q9: '',
-    q6_exit: A.q6_exit,
+    q5: A.q5||'', q6: A.q6||'', q7: A.q7||'',
+    q8: A.q8, q9: '', q10: '', q11: '',
+    q6_exit: A.q9_exit,
     path: 'early_exit'
   });
   document.getElementById('fill').style.width = '100%';
@@ -638,8 +638,8 @@ function doneEarly() {
         <div class="sum-row"><span class="sum-lbl">Blowout frequency</span><span class="sum-val">${['Multiple times a week','~Once a week','A few times a month','Rarely or never'][A.q2] ?? '—'}</span></div>
         <div class="sum-row"><span class="sum-lbl">How much it bothers you</span><span class="sum-val">${A.q3 ?? '—'} / 5</span></div>
         <div class="sum-row"><span class="sum-lbl">Current approach</span><span class="sum-val">${['Hand-rinse in sink','Toilet / shower rinse','Straight to machine','Soak it','Bin it'][A.q4] ?? '—'}</span></div>
-        <div class="sum-row"><span class="sum-lbl">Reaction to concept</span><span class="sum-val">${q5l[A.q5] ?? '—'}</span></div>
-        <div class="sum-row"><span class="sum-lbl">Why not for you</span><span class="sum-val" style="font-style:italic;color:var(--sage-dk);">"${A.q6_exit ?? '—'}"</span></div>
+        <div class="sum-row"><span class="sum-lbl">Reaction to concept</span><span class="sum-val">${q5l[A.q8] ?? '—'}</span></div>
+        <div class="sum-row"><span class="sum-lbl">Why not for you</span><span class="sum-val" style="font-style:italic;color:var(--sage-dk);">"${A.q9_exit ?? '—'}"</span></div>
       </div>
       <div class="ty-share">Know a parent who might find this useful? Share this survey with them ↗</div>
     </div>`;
@@ -649,8 +649,8 @@ function done() {
   // Capture and submit before rendering thank-you
   submitToSheet({
     q1: A.q1, q2: A.q2, q3: A.q3, q4: A.q4,
-    q4b: A.q4b||'', q4c: A.q4c||'', q4d: A.q4d||'',
-    q5: A.q5, q6: A.q6, q7: A.q7, q9: A.q9,
+    q5: A.q5||'', q6: A.q6||'', q7: A.q7||'',
+    q8: A.q8, q9: A.q9, q10: A.q10, q11: A.q11,
     q6_exit: '',
     path: 'full'
   });
@@ -662,12 +662,12 @@ function done() {
     q1: ['Expecting / newborn','3–12 months','1–2 years','2+ years / no children'],
     q2: ['Multiple times a week','~Once a week','A few times a month','Rarely or never'],
     q4: ['Hand-rinse in sink','Toilet / shower rinse','Straight to machine','Soak it','Bin it'],
-    q4b: ['Daily','Few times/week','~Once/week','Occasionally','Not weaning yet'],
-    q4c: ['Spray & soak','Scrub by hand','Straight to machine','Sun-dry','Accept it','Bin it'],
-    q4d: ['1','2','3','4','5'],
-    q5: ['Wants it — real problem ✓','Interested, wants more info','Sees appeal, not for them','Would not use'],
-    q6: { A:'Option A — Pre-cleaner (machine-wash after)', B:'Option B — Full wash (no machine needed)' },
-    q7: A.q6 === 'B'
+    q5: ['Daily','Few times/week','~Once/week','Occasionally','Not weaning yet'],
+    q6: ['Spray & soak','Scrub by hand','Straight to machine','Sun-dry','Accept it','Bin it'],
+    q7: ['1','2','3','4','5'],
+    q8: ['Wants it — real problem ✓','Interested, wants more info','Sees appeal, not for them','Would not use'],
+    q9: { A:'Option A — Pre-cleaner (machine-wash after)', B:'Option B — Full wash (no machine needed)' },
+    q10: A.q9 === 'B'
       ? ['$130–$149','$150–$169','$170–$189','$190–$199','Over $200']
       : ['Under $50','$50–$79','$80–$109','$110–$129','Over $130'],
     q8: ['Parent reviews','Doctor endorsement','60-day refund','Video demo','FDA GRAS certification']
@@ -683,13 +683,13 @@ function done() {
         <div class="sum-row"><span class="sum-lbl">Blowout frequency</span><span class="sum-val">${L.q2[A.q2] ?? '—'}</span></div>
         <div class="sum-row"><span class="sum-lbl">How much it bothers you</span><span class="sum-val">${A.q3 ?? '—'} / 5</span></div>
         <div class="sum-row"><span class="sum-lbl">Current blowout approach</span><span class="sum-val">${L.q4[A.q4] ?? '—'}</span></div>
-        <div class="sum-row"><span class="sum-lbl">Weaning stain frequency</span><span class="sum-val">${L.q4b[A.q4b] ?? '—'}</span></div>
-        <div class="sum-row"><span class="sum-lbl">Current stain approach</span><span class="sum-val">${L.q4c[A.q4c] ?? '—'}</span></div>
-        <div class="sum-row"><span class="sum-lbl">Stain spray satisfaction</span><span class="sum-val">${A.q4d ?? '—'} / 5</span></div>
-        <div class="sum-row"><span class="sum-lbl">Reaction to concept</span><span class="sum-val">${L.q5[A.q5] ?? '—'}</span></div>
-        <div class="sum-row"><span class="sum-lbl">Preferred proposition</span><span class="sum-val">${L.q6[A.q6] ?? '—'}</span></div>
-        <div class="sum-row"><span class="sum-lbl">Expected price (pod unit)</span><span class="sum-val">${L.q7[A.q7] ?? '—'}</span></div>
-        <div class="sum-row"><span class="sum-lbl">Likelihood to recommend</span><span class="sum-val">${A.q9 ?? '—'} / 5</span></div>
+        <div class="sum-row"><span class="sum-lbl">Weaning stain frequency</span><span class="sum-val">${L.q5[A.q5] ?? '—'}</span></div>
+        <div class="sum-row"><span class="sum-lbl">Current stain approach</span><span class="sum-val">${L.q6[A.q6] ?? '—'}</span></div>
+        <div class="sum-row"><span class="sum-lbl">Stain spray satisfaction</span><span class="sum-val">${A.q7 ?? '—'} / 5</span></div>
+        <div class="sum-row"><span class="sum-lbl">Reaction to concept</span><span class="sum-val">${L.q5[A.q8] ?? '—'}</span></div>
+        <div class="sum-row"><span class="sum-lbl">Preferred proposition</span><span class="sum-val">${L.q6[A.q9] ?? '—'}</span></div>
+        <div class="sum-row"><span class="sum-lbl">Expected price (pod unit)</span><span class="sum-val">${L.q7[A.q10] ?? '—'}</span></div>
+        <div class="sum-row"><span class="sum-lbl">Likelihood to recommend</span><span class="sum-val">${A.q11 ?? '—'} / 5</span></div>
       </div>
       <div class="ty-share">Know a parent who'd find this useful? Share this survey with them ↗</div>
     </div>`;
